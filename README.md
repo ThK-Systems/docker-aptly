@@ -252,8 +252,12 @@ Stops, rebuilds, and restarts the Docker Compose stack (like a hard reset)
 
 ### `git pull`
 
-May update the delivered files and script.
-Use with caution
+May update the delivered files and script.\
+Use with caution!!
+
+```bash
+git pull
+```
 
 ## 🧰 Scripts
 
