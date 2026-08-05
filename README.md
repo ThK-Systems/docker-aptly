@@ -250,6 +250,11 @@ Stops, rebuilds, and restarts the Docker Compose stack (like a hard reset)
 ./update.sh
 ```
 
+### `git pull`
+
+May update the delivered files and script.
+Use with caution
+
 ## 🧰 Scripts
 
 ### `scripts/add-package.sh`
