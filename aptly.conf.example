@@ -1,0 +1,16 @@
+{
+  "rootDir": "/aptly",
+  "downloadConcurrency": 10,
+  "architectures": ["amd64", "arm64", "all"],
+
+  "dependencyFollowSuggests": false,
+  "dependencyFollowRecommends": false,
+  "dependencyFollowAllVariants": false,
+  "dependencyFollowSource": false,
+
+  "gpgDisableSign": false,
+  "gpgProvider": "gpg",
+  "gpgKey": "YOUR_GPG_KEY_FINGERPRINT",
+
+  "publishOverwrite": true
+}
