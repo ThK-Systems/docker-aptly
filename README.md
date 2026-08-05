@@ -59,12 +59,14 @@ COMP="main"
 
 ### 4. Create the GPG directory
 
+The directory must exist before the container is started because it is bind-mounted to `/gpg`.
+
 ```bash
 mkdir -p gpg
 chmod 700 gpg
 ```
 
-The directory contains the private signing key and must not be committed.
+It contains the private signing key and must not be committed.
 
 ### 5. Configure Docker Compose
 
@@ -119,25 +121,22 @@ The empty passphrase permits unattended publishing. Protect and back up the `gpg
 
 ### 8. Configure the GPG fingerprint
 
-Get the fingerprint:
+Display the fingerprint:
 
 ```bash
-docker exec aptly gpg \
-  --list-secret-keys \
-  --with-colons |
-awk -F: '/^fpr:/ { print $10; exit }'
+docker exec aptly gpg --fingerprint
 ```
 
-Replace the placeholder in `aptly.conf`:
+Example output:
 
-```json
-"gpgKey": "YOUR_GPG_KEY_FINGERPRINT"
+```text
+84B4 E216 7E61 36DF 4BAA  1ACE 22B1 E4DD DD57 F553
 ```
 
-Example:
+Enter it in `aptly.conf` without spaces:
 
 ```json
-"gpgKey": "4A8F3E91D264B7C05F12A6E89C3D714B28E65F90"
+"gpgKey": "84B4E2167E6136DF4BAA1ACE22B1E4DDDD57F553"
 ```
 
 Restart the container:
