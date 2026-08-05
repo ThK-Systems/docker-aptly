@@ -232,6 +232,24 @@ Back up:
 
 Without the private GPG key, new repository metadata cannot be signed with the existing repository identity.
 
+## 🔧 Maintainance
+
+### `rebuild.sh`
+
+Rebuilds the image and recreates the Aptly container (minimal downtime)
+
+```bash
+./rebuild.sh
+```
+
+### `update.sh`
+
+Stops, rebuilds, and restarts the Docker Compose stack (like a hard reset)
+
+```bash
+./update.sh
+```
+
 ## 🧰 Scripts
 
 ### `scripts/add-package.sh`
@@ -274,22 +292,6 @@ Removes unused Aptly database objects.
 
 ```bash
 ./scripts/aptly-db-cleanup.sh
-```
-
-### `rebuild.sh`
-
-Rebuilds the image and recreates the Aptly container (minimal downtime)
-
-```bash
-./rebuild.sh
-```
-
-### `update.sh`
-
-Stops, rebuilds, and restarts the Docker Compose stack (like a hard reset)
-
-```bash
-./update.sh
 ```
 
 ## 🧱 Custom Dockerfile
