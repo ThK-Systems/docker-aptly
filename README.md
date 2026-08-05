@@ -30,26 +30,34 @@ git clone git@github.com:ThK-Systems/docker-aptly.git
 cd docker-aptly
 ```
 
-### 2. Create the local Aptly configuration
+### 2. Create the Aptly configuration
+
+Copy the example configuration:
 
 ```bash
 cp aptly.conf.example aptly.conf
 ```
 
-Keep the following setting unchanged unless the Docker volume mount is changed as well:
+`aptly.conf.example` is only a template. The local `aptly.conf` can be adjusted to match the installation.
+
+Keep the following setting unless the Docker volume mount is changed as well:
 
 ```json
 "rootDir": "/aptly"
 ```
 
+Leave the GPG fingerprint placeholder unchanged for now. It will be replaced after the signing key has been created.
+
 ### 3. Create the repository initialization script
+
+Copy the example script:
 
 ```bash
 cp scripts/init-repo.sh.example scripts/init-repo.sh
 chmod +x scripts/init-repo.sh
 ```
 
-Adjust the repository settings when required:
+`scripts/init-repo.sh.example` is only a template. The local script can be adjusted to define the repository name, distribution, and component:
 
 ```sh
 REPO="stable"
@@ -57,9 +65,33 @@ DIST="stable"
 COMP="main"
 ```
 
-### 4. Create the GPG directory
+The local `aptly.conf` and `scripts/init-repo.sh` files are excluded through `.gitignore`.
 
-The directory must exist before the container is started because it is bind-mounted to `/gpg`.
+### 4. Configure Docker Compose
+
+Host-specific settings can be placed in:
+
+```text
+docker-compose.override.yml
+```
+
+Docker Compose automatically combines this file with `docker-compose.yml`.
+
+Example:
+
+```yaml
+services:
+  aptly:
+    mem_limit: 512m
+    memswap_limit: 1g
+    cpus: "1.0"
+```
+
+The override file is optional and excluded through `.gitignore`.
+
+### 5. Create the GPG directory
+
+The directory must exist before starting a container because it is bind-mounted to `/gpg`:
 
 ```bash
 mkdir -p gpg
@@ -68,42 +100,40 @@ chmod 700 gpg
 
 It contains the private signing key and must not be committed.
 
-### 5. Configure Docker Compose
+### 6. Validate and build the configuration
 
-Host-specific settings can be placed in:
-
-```text
-docker-compose.override.yml
-```
-
-Docker Compose automatically combines it with `docker-compose.yml`.
-
-Example:
-
-```yaml
-services:
-  aptly:
-    ports:
-      - "8090:8080"
-
-    mem_limit: 512m
-    cpus: "1.0"
-```
-
-### 6. Build and start the container
+Validate the combined Docker Compose configuration:
 
 ```bash
-docker compose up -d --build
+docker compose config >/dev/null
 ```
 
-Check the container:
+Build the image:
 
 ```bash
-docker compose ps
-docker compose logs aptly
+docker compose build --pull
 ```
 
-### 7. Create the GPG signing key
+### 7. Start a temporary setup container
+
+The regular container starts the Aptly HTTP server. A fresh installation does not yet contain a published repository, so first start a temporary setup container:
+
+```bash
+docker compose run -d \
+  --name aptly \
+  --entrypoint sleep \
+  aptly infinity
+```
+
+Verify that it is running:
+
+```bash
+docker ps --filter name=aptly
+```
+
+### 8. Create the GPG signing key
+
+Generate a dedicated signing key inside the setup container:
 
 ```bash
 docker exec aptly gpg \
@@ -117,9 +147,9 @@ docker exec aptly gpg \
 
 Replace the name and email address with suitable values.
 
-The empty passphrase permits unattended publishing. Protect and back up the `gpg` directory.
+The empty passphrase permits unattended repository publishing. Protect and back up the `gpg` directory.
 
-### 8. Configure the GPG fingerprint
+### 9. Configure the GPG fingerprint
 
 Display the fingerprint:
 
@@ -133,19 +163,17 @@ Example output:
 84B4 E216 7E61 36DF 4BAA  1ACE 22B1 E4DD DD57 F553
 ```
 
-Enter it in `aptly.conf` without spaces:
+Enter the fingerprint in `aptly.conf` without spaces:
 
 ```json
 "gpgKey": "84B4E2167E6136DF4BAA1ACE22B1E4DDDD57F553"
 ```
 
-Restart the container:
+The updated configuration is immediately available inside the container through the bind mount.
 
-```bash
-docker compose restart aptly
-```
+### 10. Initialize the repository
 
-### 9. Initialize the repository
+Create the local repository:
 
 ```bash
 ./scripts/init-repo.sh
@@ -156,6 +184,47 @@ With the default settings, this creates:
 * Repository: `stable`
 * Distribution: `stable`
 * Component: `main`
+
+### 11. Publish the repository
+
+Publish the repository so that the Aptly HTTP server can serve it:
+
+```bash
+docker exec aptly aptly publish repo stable
+```
+
+Replace `stable` with the `REPO` value configured in `scripts/init-repo.sh` when necessary.
+
+The architectures required for publishing an empty repository are defined in `aptly.conf`.
+
+### 12. Start the regular container
+
+Remove the temporary setup container:
+
+```bash
+docker rm -f aptly
+```
+
+Start the regular Aptly service:
+
+```bash
+docker compose up -d
+```
+
+Verify the container:
+
+```bash
+docker compose ps
+docker compose logs aptly
+```
+
+Test the published repository:
+
+```bash
+curl -fsSL http://127.0.0.1:8090/dists/stable/Release
+```
+
+Replace `stable` with the configured distribution when necessary.
 
 ## 🔑 Export the public signing key
 
