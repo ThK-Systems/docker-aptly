@@ -278,7 +278,7 @@ Removes unused Aptly database objects.
 
 ### `rebuild.sh`
 
-Rebuilds the image and recreates the Aptly container.
+Rebuilds the image and recreates the Aptly container (minimal downtime)
 
 ```bash
 ./rebuild.sh
@@ -286,7 +286,7 @@ Rebuilds the image and recreates the Aptly container.
 
 ### `update.sh`
 
-Stops, rebuilds, and restarts the Docker Compose stack.
+Stops, rebuilds, and restarts the Docker Compose stack (like a hard reset)
 
 ```bash
 ./update.sh
