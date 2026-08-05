@@ -3,4 +3,4 @@ docker-compose.override.yml
 Dockerfile.local
 scripts/init-repo.sh
 gpg/
-aptly-data/
+aptly-data
