@@ -292,3 +292,43 @@ Stops, rebuilds, and restarts the Docker Compose stack.
 ```bash
 ./update.sh
 ```
+
+## 🧱 Custom Dockerfile
+
+Docker does not provide an automatic override mechanism for `Dockerfile` files.
+
+To use a custom Dockerfile, create a separate file, for example:
+
+```text
+Dockerfile.local
+```
+
+Then select it through `docker-compose.override.yml`:
+
+```yaml
+services:
+  aptly:
+    build:
+      context: .
+      dockerfile: Dockerfile.local
+```
+
+The custom Dockerfile can either replace the default build instructions or extend an existing image.
+
+Example:
+
+```dockerfile
+FROM debian:trixie-slim
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      aptly \
+      gnupg \
+      ca-certificates \
+      curl \
+ && rm -rf /var/lib/apt/lists/*
+
+CMD ["aptly", "serve", "-listen=:8080"]
+```
+
+This keeps local Dockerfile customizations separate from the tracked `Dockerfile`.
