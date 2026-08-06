@@ -247,7 +247,7 @@ The Aptly HTTP server listens on:
 http://127.0.0.1:8090/
 ```
 
-Use an HTTPS reverse proxy when the repository must be accessible from other systems.
+Use an HTTPS reverse proxy when the repository must be accessible from other systems. (see `nginx-reverse-proxy.conf.example`.)
 
 Test the repository:
 
